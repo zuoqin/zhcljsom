@@ -62,7 +62,7 @@
 
 
 (defn downloadstory [href]
-  (GET (str "http://localhost:8083/api/story/" href)  {:handler OnDownloadStory
+  (GET (str "http://take5people.cn:8083/api/story/" href)  {:handler OnDownloadStory
                                               :error-handler error-handler})
 
 )
@@ -98,7 +98,7 @@
       (map
         (fn [story]
           (assoc story
-           :Title (get story "Title") :Introduction (get story "Introduction") :Reference (get story "Reference") :view 0))
+           :Title (get story "Title") :Introduction (get story "Introduction") :Reference (get story "Reference") ))
               (get response "Data")
       ))
     ]
@@ -106,7 +106,8 @@
     (.log js/console (str pageid))
     ;;(.log js/console (str (select-keys (js->clj response) [:Title :Reference :Introduction])  ))    
     ;(swap! app-state assoc-in pageid newdata )
-    (swap! app-state assoc-in [:stories] newdata )
+    (swap! app-state assoc-in [:stories] newdata)
+    (swap! app-state assoc-in [:view] 0 )
   )
   
   ;;(.log js/console (str  (response) ))
@@ -121,7 +122,7 @@
 
 
 (defn downloadpage [pageid]
-  (GET (str "http://localhost:8083/api/page/" pageid)  {:handler handler
+  (GET (str "http://take5people.cn:8083/api/page/" pageid)  {:handler handler
                                               :error-handler error-handler})
 
 )
@@ -152,6 +153,43 @@
 )
 
 (defn list-view [app owner]
+  (reify
+    om/IRender
+    (render [_]
+      (dom/div #js {:className "col-md-12" :id "blogItems" :styles "margin-top: 60px;"}
+        (apply dom/ul nil
+          (om/build-all story-view (:stories app) {:key :Reference})
+        )
+      )               
+    )
+  )
+)
+
+(defmulti website-view (fn [data _] (:view data)))
+
+(defmethod website-view 0
+  [data owner] 
+  (list-view data owner)
+)
+
+(defmethod website-view 1
+  [data owner] 
+  (item-view data owner)
+)
+
+
+(defn changeview [data]
+  (->> data
+    :stories
+    (mapv (fn [x]
+            (if (:view data)
+              x)
+      )
+    )
+  )
+)
+
+(defn main-view [app owner]
   (reify
     om/IRender
     (render [_]
@@ -194,47 +232,6 @@
             )           
           )
         )
-
-        (dom/div #js {:className "col-md-12" :id "blogItems" :styles "margin-top: 60px;"}
-          (apply dom/ul nil
-            (om/build-all story-view (:stories app) {:key :Reference})
-          )
-        )         
-      )
-    )
-  )
-)
-
-(defmulti website-view (fn [data _] (:view data)))
-
-(defmethod website-view 0
-  [data owner] 
-  (list-view data owner)
-)
-
-(defmethod website-view 1
-  [data owner] 
-  (item-view data owner)
-)
-
-
-(defn changeview [data]
-  (->> data
-    :stories
-    (mapv (fn [x]
-            (if (:view data)
-              x)
-      )
-    )
-  )
-)
-
-(defn main-view [app owner]
-  (reify
-    om/IRender
-    (render [_]
-      (dom/div nil
-        ;(apply dom/ul nil      )
         (om/build website-view app {:key :Reference} )
       )      
     )

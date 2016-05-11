@@ -82,6 +82,7 @@
         )
         (dom/div #js {:className "panel-body"}
           (dom/div #js {:dangerouslySetInnerHTML #js {:__html (get story :Introduction)}} nil)
+          (dom/p {} (get story :Published) nil)
         )
       )
     )
@@ -98,7 +99,7 @@
       (map
         (fn [story]
           (assoc story
-           :Title (get story "Title") :Introduction (get story "Introduction") :Reference (get story "Reference") ))
+           :Title (get story "Title") :Introduction (get story "Introduction") :Reference (get story "Reference") :Published (get story "Published")))
               (get response "Data")
       ))
     ]
@@ -157,7 +158,7 @@
     om/IRender
     (render [_]
       (dom/div #js {:className "col-md-12" :id "blogItems" :styles "margin-top: 60px;"}
-        (apply dom/ul nil
+        (apply dom/ul #js {:className "ulallstories"}
           (om/build-all story-view (:stories app) {:key :Reference})
         )
       )               
@@ -238,7 +239,7 @@
   )
 )
 
-
+(downloadpage 0)
 
 (om/root
  main-view

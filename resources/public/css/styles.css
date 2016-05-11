@@ -6,6 +6,10 @@ h1 {
     padding-top: 55px;
 }
 
+ .ulallstories{
+  -webkit-padding-start: 0px;
+}
+
 .pageButton {
     background-color: transparent;
     color: #9d9d9d;
